@@ -45,6 +45,9 @@ urlpatterns = [
     path('accounts/wishlist/', WishlistAPIView.as_view(), name='wishlist'),
     path('accounts/wishlist/<int:pk>/add/', WishlistAddBookAPIView.as_view(), name='wishlist-add'),
     path('accounts/wishlist/<int:pk>/remove/', WishlistRemoveBookAPIView.as_view(), name='wishlist-remove'),
+    path('image/', ImageListView.as_view(), name='image'),
+    path('image-add/', ImageCreateView.as_view(), name='image-add'),
+    path('image-delete/<int:pk>/', ImageDeleteView.as_view(), name='image-delete'),
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

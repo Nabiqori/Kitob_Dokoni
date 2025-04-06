@@ -162,3 +162,41 @@ class WishlistRemoveBookAPIView(APIView):
         wishlist.save()
         return Response({'succes': True, 'message': 'Book removed from wishlist.'}, status=status.HTTP_204_NO_CONTENT)
 
+class ImageCreateView(APIView):
+    def post(self, request):
+        image_serializer = ImageSerializer(data=request.data)
+        if image_serializer.is_valid() and request.user.is_authenticated and image_serializer.validated_data['book'].account == request.user:
+            image_serializer.save()
+            return Response(image_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ImageListView(generics.ListAPIView):
+    serializer_class = ImageSerializer
+    queryset = Image.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['book']
+    pagination_class = MyPagination
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name='book',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description='Filter by book'
+            )
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+class ImageDeleteView(APIView):
+    def delete(self, request, pk):
+        image = get_object_or_404(Image, pk=pk, book__account=request.user)
+        if image.book.account != request.user:
+            return Response(
+                {'succes': False, 'message': 'You do not have permission to perform this action.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        image.delete()
+        return Response({'succes': True, 'message': 'Image deleted.'}, status=status.HTTP_204_NO_CONTENT)
